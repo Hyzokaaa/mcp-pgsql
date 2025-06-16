@@ -1,0 +1,19 @@
+[project]
+name = "mcp-pgsql"
+version = "0.1.0"
+description = "Sistema de agente que permite la comunicación con bd en postgres utilizando LLM en ollama"
+authors = [{name = "Hyzokaaa", email = "luismiguellagosxenes@gmail.com"}]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+
+dependencies = [
+    "pydantic>=2.11.5",
+    "mcp>=1.9.1",
+    "python-dotenv>=1.1.0",
+    "rich>=14.0.0",
+    "streamlit>=1.45.1",
+]
+
+[tool.pdm]
+distribution = false
