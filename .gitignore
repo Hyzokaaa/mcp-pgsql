@@ -16,3 +16,4 @@ pois_cuba_meilisearch.json
 *.log
 .DS_Store
 pdm.lock
+.pdm-python
