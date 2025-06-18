@@ -24,10 +24,12 @@ MISTRAL_7B = ModelConfig("mistral:7b", temperature=0.0, provider=ModelProvider.O
 LLAMA3_3B = ModelConfig("llama3.2:3b", temperature=0.0, provider=ModelProvider.OLLAMA)
 LLAMA3_1B = ModelConfig("llama3.2:1b", temperature=0.0, provider=ModelProvider.OLLAMA)
 COGITO_8B = ModelConfig("cogito:8b", temperature=0.0, provider=ModelProvider.OLLAMA)
+DEEPSEEK_1_5B = ModelConfig("deepseek-r1:1.5b", temperature=0.0, provider=ModelProvider.OLLAMA)
+DEEPSEEK_8B = ModelConfig("deepseek-r1:8b", temperature=0.0, provider=ModelProvider.OLLAMA)
 
 class Config:
     SEED = 42
-    MODEL = COGITO_8B
+    MODEL = GRANITE_2B
     OLLAMA_CONTEXT_WINDOW = 4096
 
     DATABASE_URL = os.getenv(
