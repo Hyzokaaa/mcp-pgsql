@@ -34,8 +34,8 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("Rentacar SQL Assistant")
-st.subheader("Consulta tu base de datos rentacar con SQL")
+st.title("SEPSA ORACLE Assistant")
+st.subheader("Consulta el data warehouse utilizando inteligencia artificial")
 
 if "llm" not in st.session_state:
     st.session_state.llm = create_llm(Config.MODEL)

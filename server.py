@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 mcp = FastMCP(
-    name="RentacarSQL",
+    name="SEPSA IA",
     host=Config.Server.HOST,
     port=Config.Server.PORT,
     sse_path=Config.Server.SSE_PATH,
@@ -24,7 +24,7 @@ mcp = FastMCP(
 
 @mcp.tool()
 def list_db_tables() -> str:
-    """Lista todas las tablas de la base de datos rentacar, en JSON."""
+    """Lista todas las tablas de la base de datos, en JSON."""
     tables = list_tables()
     return json.dumps({"tables": tables}, indent=2)
 
@@ -39,7 +39,7 @@ def describe_db_table(table_name: str) -> str:
     )
 
 @mcp.tool()
-def execute_sql(query: str) -> str:
+def execute_query(query: str) -> str:
     """
     Ejecuta un SELECT en la base de datos.
     Solo permitimos sentencias que empiecen con 'select'.
@@ -48,7 +48,7 @@ def execute_sql(query: str) -> str:
     if not query.strip().lower().startswith("select"):
         # En caso de que no sea SELECT, imprimimos en consola y devolvemos JSON de error
         mensaje_err = "Sólo se permiten consultas SELECT."
-        logger.error(f"Intento inválido en execute_sql: {mensaje_err} – Query recibida: '{query}'")
+        logger.error(f"Intento inválido en execute_query: {mensaje_err} – Query recibida: '{query}'")
         return json.dumps({"error": mensaje_err}, ensure_ascii=False)
 
     try:
@@ -72,11 +72,11 @@ def execute_sql(query: str) -> str:
 
     except Exception as e:
         # Logueamos la excepción completa (incluyendo traceback) en consola
-        logger.exception(f"Error ejecutando execute_sql con query: '{query}'")
+        logger.exception(f"Error ejecutando execute_query con query: '{query}'")
 
         # Además devolvemos un JSON con el mensaje de error
         return json.dumps(
-            {"error": f"Error ejecutando execute_sql: {str(e)}"},
+            {"error": f"Error ejecutando execute_query: {str(e)}"},
             ensure_ascii=False,
         )
 

@@ -35,7 +35,7 @@ class Config:
     MODEL = QWEN3_8B
     OLLAMA_CONTEXT_WINDOW = 4096
 
-    DB_BACKEND = os.getenv("DB_BACKEND", "postgres").lower()
+    DB_BACKEND = DbBackend.ORACLE
 
     if DB_BACKEND == DbBackend.POSTGRES:
         DATABASE_URL = os.getenv(
