@@ -2,6 +2,8 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 
+from app.core.settings import settings
+
 
 class ModelProvider(str, Enum):
     OLLAMA = "ollama"
@@ -32,29 +34,22 @@ DEEPSEEK_8B = ModelConfig("deepseek-r1:8b", temperature=0.0, provider=ModelProvi
 
 class Config:
     SEED = 42
-    MODEL = QWEN3_8B
-    OLLAMA_CONTEXT_WINDOW = 4096
+    MODEL = ModelConfig(
+        name=settings.llm_model_name,
+        temperature=settings.llm_temperature,
+        provider=ModelProvider.OLLAMA,
+    )
 
-    DB_BACKEND = DbBackend.ORACLE
+    OLLAMA_CONTEXT_WINDOW = settings.ollama_context_window
 
-    if DB_BACKEND == DbBackend.POSTGRES:
-        DATABASE_URL = os.getenv(
-            "DATABASE_URL",
-            "postgresql://postgres:*Hyzoka01021268345@localhost:5432/rentacar"
-        )
-    elif DB_BACKEND == DbBackend.ORACLE:
-        DATABASE_URL = os.getenv(
-            "DATABASE_URL",
-            "oracle+oracledb://USER_DWH:Systemanager2020@10.0.0.32:1521/?service_name=ORCL"
-        )
-    else:
-        raise ValueError(f"Unsupported DB_BACKEND: {DB_BACKEND}")
+    DB_BACKEND = DbBackend(settings.db_backend)
+    DATABASE_URL = str(settings.database_url)
 
     class Server:
-        HOST = "localhost"
-        PORT = 8000
-        SSE_PATH = "/sse"
-        TRANSPORT = "sse"
+        HOST = settings.server_host
+        PORT = settings.server_port
+        SSE_PATH = settings.server_sse_path
+        TRANSPORT = settings.server_transport
 
     class Agent:
-        MAX_ITERATIONS = 5
+        MAX_ITERATIONS = settings.agent_max_iterations
