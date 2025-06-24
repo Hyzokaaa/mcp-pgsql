@@ -33,6 +33,7 @@ DEEPSEEK_1_5B = ModelConfig("deepseek-r1:1.5b", temperature=0.0, provider=ModelP
 DEEPSEEK_8B = ModelConfig("deepseek-r1:8b", temperature=0.0, provider=ModelProvider.OLLAMA)
 
 class Config:
+    env_file = ".env"
     SEED = 42
     MODEL = ModelConfig(
         name=settings.llm_model_name,

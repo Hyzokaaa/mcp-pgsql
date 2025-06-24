@@ -4,7 +4,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage
 
 from client_config import connect_to_server
-from tools import load_tools
+from app.mcp_tools.tools import load_tools
 
 class ToolCallSchema(BaseModel):
     name: str = Field(..., description="Nombre de la herramienta a invocar")

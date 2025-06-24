@@ -1,6 +1,6 @@
 from langchain_core.language_models import BaseChatModel
 from langchain_ollama import ChatOllama
-from config import Config, ModelConfig, ModelProvider
+from app.core.config import Config, ModelConfig
 
 
 def create_llm(model_config: ModelConfig) -> BaseChatModel:

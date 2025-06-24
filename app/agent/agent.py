@@ -1,16 +1,16 @@
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain_core.tools import BaseTool
 
-from config import Config
-from logging_local import blue_border_style, green_border_style, log_panel
-from tools import call_tool
+from app.core.config import Config
+from app.agent.logging_local import blue_border_style, green_border_style, log_panel
 
 
 SYSTEM_PROMPT = """
 Eres un asistente profesional de consultas en ORACLE para la base de datos.
 Dispones de estas herramientas:
 - list_db_tables() -> lista tablas
+- describe_db_tables(table_name) -> describe tablas
 - execute_query(query: str) -> ejecuta consulta SELECT
 Nunca ejecutes consultas si no estás seguro de que las tablas existen.
 Responde en Markdown: explica consulta y muestra los resultados en tablas siempre que sea posible.
@@ -19,6 +19,7 @@ Responde en Markdown: explica consulta y muestra los resultados en tablas siempr
 
 def create_history() -> list[BaseMessage]:
     return [SystemMessage(content=SYSTEM_PROMPT)]
+
 
 async def ask(
     query: str,
@@ -33,29 +34,33 @@ async def ask(
     messages = history.copy()
     messages.append(HumanMessage(content=query))
 
+    tools_by_name = {tool.name: tool for tool in available_tools}
+
     while n_iterations < max_iteration:
-        # 1) Llamada al LLM
         response = await llm.ainvoke(messages)
         messages.append(response)
 
-        # 2) Si no hay llamadas a tool, devolvemos la respuesta final
         if not response.tool_calls:
             return response.content
 
-        # 3) Procesar cada tool_call
         for tool_call in response.tool_calls:
             log_panel(
                 title=str(tool_call),
                 content=str(tool_call),
                 border_style=blue_border_style,
             )
-            tool_response = await call_tool(tool_call, available_tools)
-            messages.append(tool_response)
 
-        # 4) Incrementar contador
+            tool = tools_by_name.get(tool_call["name"])
+
+            if not tool:
+                raise ValueError(f"Herramienta '{tool_call['name']}' no encontrada.")
+
+            # ⚠️ IMPORTANTE: StructuredTool necesita `await tool.ainvoke(args)`
+            tool_result = await tool.ainvoke(tool_call["args"])
+            messages.append(ToolMessage(content=str(tool_result), tool_call_id=tool_call['id']))
+
         n_iterations += 1
 
-    # Si agotamos iteraciones, lanzamos el error con typo corregido
     raise RuntimeError(
         "Maximum number of iterations reached. Please try again with a different query"
     )

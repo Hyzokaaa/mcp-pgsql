@@ -1,6 +1,6 @@
 # db.py
 from sqlalchemy import create_engine, text, inspect
-from config import Config
+from app.core.config import Config
 
 engine = create_engine(Config.DATABASE_URL, future=True)
 inspector = inspect(engine)
