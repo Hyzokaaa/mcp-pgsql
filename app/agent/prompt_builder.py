@@ -5,7 +5,7 @@ from app.agent.schema_loader import load_db_schema
 def build_system_prompt() -> str:
     schema = load_db_schema()
     lines = [
-        "Eres un asistente profesional de SQL. El esquema actual de la base de datos es:"
+        "Eres un asistente profesional de Oralce. El esquema actual de la base de datos es:"
     ]
     for table, info in schema.items():
         cols = ", ".join(col["name"] for col in info["columns"])

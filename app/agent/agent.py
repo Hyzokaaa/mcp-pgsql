@@ -7,18 +7,6 @@ from app.agent.prompt_builder import build_system_prompt
 from app.core.config import Config
 from app.agent.logging_local import blue_border_style, green_border_style, yellow_border_style, magenta_border_style, log_panel
 
-
-SYSTEM_PROMPT = """
-Eres un asistente profesional de consultas en ORACLE para la base de datos.
-Dispones de estas herramientas:
-- list_db_tables() -> lista tablas
-- describe_db_tables(table_name) -> describe tablas
-- execute_query(query: str) -> ejecuta consulta SELECT
-Nunca ejecutes consultas si no estás seguro de que las tablas existen.
-Responde en Markdown: explica consulta y muestra los resultados en tablas siempre que sea posible.
-""".strip()
-
-
 def create_history() -> list[BaseMessage]:
     system_content = build_system_prompt()
     return [SystemMessage(content=system_content)]
