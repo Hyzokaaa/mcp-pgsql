@@ -1,3 +1,4 @@
+# app/agent/logging_local.py
 import json
 from rich.panel import Panel
 from rich.text import Text

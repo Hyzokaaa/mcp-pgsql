@@ -1,3 +1,5 @@
+# app/agent/tools.py
+
 from typing import Any
 from langchain_core.tools import StructuredTool, ToolException
 from app.db.db import list_tables, describe_table, run_query
@@ -25,20 +27,15 @@ async def _wrap_describe_table(table_name: str) -> dict:
     except Exception as e:
         raise ToolException(f"Error en describe_db_table: {e}")
 
-async def _wrap_execute_query(query: str) -> dict:
-    q = query.strip().lower()
-    if not q.startswith("select"):
-        raise ToolException("Sólo se permiten consultas SELECT.")
+async def _wrap_execute_query(query: str) -> Any:
     try:
         rows = run_query(query)
-        row_count = len(rows)
-        return {
-            "status": "success",
-            "row_count": row_count,
-            "first_3_rows": rows[:3] if row_count > 3 else rows,
-            "truncated": row_count > 3,
-            "sample_size": min(3, row_count)
-        }
+        if not rows:
+            return {"rows": [], "message": "Consulta OK, sin filas."}
+        return {"rows": rows}
+    except ValueError as ve:
+        # Error de validación
+        raise ToolException(str(ve))
     except Exception as e:
         raise ToolException(f"Error en execute_query: {e}")
 

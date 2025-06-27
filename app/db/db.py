@@ -1,6 +1,8 @@
-# db.py
+# app/db/db.py
+
 from sqlalchemy import create_engine, text, inspect
 from app.core.config import Config
+from app.db.validators import validate_select_only, InvalidQueryError
 
 engine = create_engine(Config.DATABASE_URL, future=True)
 inspector = inspect(engine)
@@ -22,6 +24,10 @@ def run_query(sql: str) -> list[dict]:
     Ejecuta la consulta SQL y devuelve siempre una lista de diccionarios,
     usando result.mappings() para que cada fila sea un mapping limpio.
     """
+    try:
+        validate_select_only(sql)
+    except InvalidQueryError as e:
+        raise ValueError(f"Consulta inválida: {e}")
     with engine.connect() as conn:
         result = conn.execute(text(sql))
         # Aquí obligamos a SQLAlchemy a darnos cada fila como RowMapping

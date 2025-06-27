@@ -1,4 +1,3 @@
-import streamlit as st
 import asyncio
 import random
 from dotenv import load_dotenv
