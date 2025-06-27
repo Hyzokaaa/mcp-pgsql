@@ -3,7 +3,7 @@ from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, To
 from langchain_core.tools import BaseTool
 
 from app.core.config import Config
-from app.agent.logging_local import blue_border_style, green_border_style, log_panel
+from app.agent.logging_local import blue_border_style, green_border_style, yellow_border_style, magenta_border_style, log_panel
 
 
 SYSTEM_PROMPT = """
@@ -44,19 +44,62 @@ async def ask(
             return response.content
 
         for tool_call in response.tool_calls:
+            # Log de la llamada a la herramienta
             log_panel(
-                title=str(tool_call),
-                content=str(tool_call),
-                border_style=blue_border_style,
+                title="Tool Call",
+                content={
+                    "tool": tool_call["name"],
+                    "args": tool_call["args"],
+                    "iteration": n_iterations
+                },
+                border_style=magenta_border_style,
             )
 
             tool = tools_by_name.get(tool_call["name"])
 
             if not tool:
-                raise ValueError(f"Herramienta '{tool_call['name']}' no encontrada.")
+                error_msg = f"Herramienta '{tool_call['name']}' no encontrada."
+                log_panel(
+                    title="Tool Error",
+                    content={
+                        "tool": tool_call["name"],
+                        "error": error_msg,
+                        "args": tool_call["args"]
+                    },
+                    border_style="bold red",
+                )
+                raise ValueError(error_msg)
 
-            # ⚠️ IMPORTANTE: StructuredTool necesita `await tool.ainvoke(args)`
-            tool_result = await tool.ainvoke(tool_call["args"])
+            try:
+                # Ejecutar la herramienta
+                tool_result = await tool.ainvoke(tool_call["args"])
+                
+                # Log del resultado exitoso
+                log_panel(
+                    title="Tool Result",
+                    content={
+                        "tool": tool_call["name"],
+                        "result": tool_result,
+                        "status": "success"
+                    },
+                    border_style=yellow_border_style,
+                )
+                
+            except Exception as e:
+                error_msg = str(e)
+                # Log del error
+                log_panel(
+                    title="Tool Error",
+                    content={
+                        "tool": tool_call["name"],
+                        "error": error_msg,
+                        "args": tool_call["args"],
+                        "status": "error"
+                    },
+                    border_style="bold red",
+                )
+                tool_result = f"Error: {error_msg}"
+
             messages.append(ToolMessage(content=str(tool_result), tool_call_id=tool_call['id']))
 
         n_iterations += 1

@@ -17,7 +17,7 @@ async def main():
     llm_with_tools = llm.bind_tools(tools)
 
     # 3. Prueba: listar tablas
-    pregunta = "Lístame las tablas de la base de datos y muéstrame las tablas, posteriormente descríbeme la tabla 'car' y por último muéstrame todos los carros de la tabla 'car'"
+    pregunta = "Quiero conocer todos los productos de la base de datos, listamelos en una tabla"
     respuesta = await ask(pregunta, history, llm_with_tools, tools)
     print("\n=== RESPUESTA ===\n")
     print(respuesta)

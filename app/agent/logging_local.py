@@ -1,26 +1,31 @@
-# logging_local.py
-from rich.console import Console
-from rich.panel import Panel
-from rich.style import Style
 import json
-
-blue_border_style = Style(color="#0EA5E9")
-green_border_style = Style(color="#10B981")
+from rich.panel import Panel
+from rich.text import Text
+from rich.console import Console
+from datetime import datetime
 
 console = Console()
 
-def log_panel(
-        title: str,
-        content: str | dict,
-        border_style: Style = blue_border_style,
-):
-    # Si content es dict, lo formateamos como JSON legible
-    text = json.dumps(content, indent=2, default=str) if isinstance(content, dict) else content
-    console.log(
-        Panel(
-            text,
-            title=title,
-            border_style=border_style,
-            expand=False
-        )
-    )
+# Estilos para diferentes tipos de logs
+blue_border_style = "bold blue"
+green_border_style = "bold green"
+yellow_border_style = "bold yellow"
+magenta_border_style = "bold magenta"
+
+def log_panel(title: str, content: any, border_style: str, log_file: str = "agent_tools.log"):
+    """Registra eventos en consola y en archivo de log estructurado"""
+    timestamp = datetime.now().isoformat()
+    
+    # Formato para consola
+    panel_content = Text.from_ansi(str(content))
+    console.print(Panel(panel_content, title=title, border_style=border_style))
+    
+    # Formato estructurado para archivo
+    log_entry = {
+        "timestamp": timestamp,
+        "type": title.lower().replace(" ", "_"),
+        "content": str(content) if not isinstance(content, dict) else content
+    }
+    
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
