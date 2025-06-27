@@ -3,6 +3,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain_core.tools import BaseTool
 
+from app.agent.prompt_builder import build_system_prompt
 from app.core.config import Config
 from app.agent.logging_local import blue_border_style, green_border_style, yellow_border_style, magenta_border_style, log_panel
 
@@ -19,8 +20,8 @@ Responde en Markdown: explica consulta y muestra los resultados en tablas siempr
 
 
 def create_history() -> list[BaseMessage]:
-    return [SystemMessage(content=SYSTEM_PROMPT)]
-
+    system_content = build_system_prompt()
+    return [SystemMessage(content=system_content)]
 
 async def ask(
     query: str,
