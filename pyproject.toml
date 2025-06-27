@@ -25,3 +25,8 @@ dependencies = [
 
 [tool.pdm]
 distribution = false
+
+[tool.pdm.scripts]
+direct = { cmd = "python -m app.direct_client" }
+ui = { cmd = "python -m streamlit run app/ui.py" }
+
