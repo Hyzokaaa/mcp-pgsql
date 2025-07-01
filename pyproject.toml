@@ -1,5 +1,5 @@
 [project]
-name = "mcp-pgsql"
+name = "sql-agent"
 version = "0.1.0"
 description = "Sistema de agente que permite la comunicación con bd en postgres utilizando LLM en ollama"
 authors = [{name = "Hyzokaaa", email = "luismiguellagosxenes@gmail.com"}]
@@ -20,7 +20,13 @@ dependencies = [
     "langchain-core>=0.3.65",
     "langchain-ollama>=0.3.3",
     "sqlparse>=0.5.3",
-    "pytest>=8.4.1"
+    "pytest>=8.4.1",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "python-jose>=3.3.0",
+    "passlib>=1.7.4",
+    "bcrypt>=4.0.0",
+    "ldap3>=2.9.1"
 ]
 
 [tool.pdm]
@@ -29,4 +35,6 @@ distribution = false
 [tool.pdm.scripts]
 direct = { cmd = "python -m app.direct_client" }
 ui = { cmd = "python -m streamlit run app/ui.py" }
+api = { cmd = "python -m app.api.main" }
+dev = { cmd = "uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000" }
 
