@@ -1,35 +1,50 @@
 # app/db/db.py
 
 from sqlalchemy import create_engine, text, inspect
-from app.core.config import Config
+from app.core.config import Config, DbBackend
 from app.db.validators import validate_select_only, InvalidQueryError
 
-engine = create_engine(Config.DATABASE_URL, future=True)
-inspector = inspect(engine)
+# Validación de backend de base de datos TARGET
+if Config.TARGET_DB_BACKEND == DbBackend.ORACLE:
+    if "oracle" not in Config.TARGET_DATABASE_URL.lower():
+        raise ValueError("TARGET_DATABASE_URL debe contener 'oracle' cuando TARGET_DB_BACKEND=oracle")
+elif Config.TARGET_DB_BACKEND == DbBackend.POSTGRES:
+    if "postgresql" not in Config.TARGET_DATABASE_URL.lower():
+        raise ValueError("TARGET_DATABASE_URL debe contener 'postgresql' cuando TARGET_DB_BACKEND=postgres")
 
+# Engine para la base de datos TARGET (la que analiza el agente)
+target_engine = create_engine(Config.TARGET_DATABASE_URL, future=True)
+target_inspector = inspect(target_engine)
+
+
+# Funciones para la base de datos TARGET (usadas por el agente)
 def list_tables() -> list[str]:
-    return inspector.get_table_names()
+    """Lista tablas de la base de datos TARGET"""
+    return target_inspector.get_table_names()
 
 def describe_table(table: str) -> dict:
+    """Describe tabla de la base de datos TARGET"""
     return {
         "columns": [
             {"name": c["name"], "type": str(c["type"]), "nullable": c["nullable"]}
-            for c in inspector.get_columns(table)
+            for c in target_inspector.get_columns(table)
         ],
-        "pk": inspector.get_pk_constraint(table).get("constrained_columns", []),
+        "pk": target_inspector.get_pk_constraint(table).get("constrained_columns", []),
     }
 
 def run_query(sql: str) -> list[dict]:
     """
-    Ejecuta la consulta SQL y devuelve siempre una lista de diccionarios,
-    usando result.mappings() para que cada fila sea un mapping limpio.
+    Ejecuta consulta en la base de datos TARGET
     """
     try:
         validate_select_only(sql)
     except InvalidQueryError as e:
         raise ValueError(f"Consulta inválida: {e}")
-    with engine.connect() as conn:
+    with target_engine.connect() as conn:
         result = conn.execute(text(sql))
-        # Aquí obligamos a SQLAlchemy a darnos cada fila como RowMapping
         filas_map = result.mappings().all()
         return [dict(row) for row in filas_map]
+
+def get_target_engine():
+    """Retorna engine de la base de datos TARGET"""
+    return target_engine
