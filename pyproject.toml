@@ -1,7 +1,7 @@
 [project]
 name = "sql-agent"
 version = "0.1.0"
-description = "Sistema de agente que permite la comunicación con bd en postgres utilizando LLM en ollama"
+description = "Sistema de agente que permite la comunicación con bases de datos utilizando LLM en ollama"
 authors = [{name = "Hyzokaaa", email = "luismiguellagosxenes@gmail.com"}]
 readme = "README.md"
 license = "MIT"
@@ -26,7 +26,6 @@ dependencies = [
     "python-jose>=3.3.0",
     "passlib>=1.7.4",
     "bcrypt>=4.0.0",
-    "ldap3>=2.9.1"
 ]
 
 [tool.pdm]
@@ -35,6 +34,4 @@ distribution = false
 [tool.pdm.scripts]
 direct = { cmd = "python -m app.direct_client" }
 ui = { cmd = "python -m streamlit run app/ui.py" }
-api = { cmd = "python -m app.api.main" }
-dev = { cmd = "uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000" }
-
+api = { cmd = "python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" }
