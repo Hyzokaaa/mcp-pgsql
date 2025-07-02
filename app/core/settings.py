@@ -26,7 +26,6 @@ class Settings(BaseSettings):
     
     # CORS
     cors_origins: list[str] = Field(
-        ["http://localhost:3000", "http://localhost:5173"], 
         env="CORS_ORIGINS"
     )
     

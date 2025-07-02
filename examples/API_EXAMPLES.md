@@ -2,6 +2,14 @@
 
 ## Ejemplos de uso de la API SQL Agent
 
+### Configuración CORS para React
+
+Para agregar orígenes, configura la variable de entorno `CORS_ORIGINS`:
+
+```bash
+CORS_ORIGINS=["http://localhost:3000","https://miapp.com","https://otro-dominio.com"]
+```
+
 ### 1. Health Check
 
 ```bash
