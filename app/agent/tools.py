@@ -1,62 +1,135 @@
 # app/agent/tools.py
 
-from typing import Any
-from langchain_core.tools import StructuredTool, ToolException
+from typing import Any, List
+from langchain_core.tools import tool, ToolException, BaseTool
 from app.db.db import list_tables, describe_table, run_query
+from app.agent.logging_local import log_panel
 
-async def _wrap_list_tables() -> dict:
+@tool(parse_docstring=True)
+def list_db_tables(reasoning: str) -> str:
+    """Lists all user-created tables in the database (excludes system tables).
+    
+    Args:
+        reasoning: Detailed explanation of why you need to see all tables (relate to the user's query)
+    """
+    log_panel(
+        title="List Tables Tool",
+        content=f"Reasoning: {reasoning}",
+        border_style="bold blue"
+    )
+    
     try:
         tables = list_tables()
-        return {
+        result = {
             "status": "success",
             "tables": tables,
             "count": len(tables)
         }
+        return str(result)
     except Exception as e:
-        raise ToolException(f"Error en list_db_tables: {e}")
+        error_msg = f"Error listing tables: {str(e)}"
+        log_panel(title="Tool Error", content=error_msg, border_style="bold red")
+        return f"Error listing tables: {str(e)}"
 
-async def _wrap_describe_table(table_name: str) -> dict:
+@tool(parse_docstring=True)
+def describe_db_table(table_name: str, reasoning: str) -> str:
+    """Describes the structure of a database table (columns, types, and primary keys).
+    
+    Args:
+        table_name: Name of the table to describe
+        reasoning: Detailed explanation of why you need this table's structure
+    """
+    log_panel(
+        title="Describe Table Tool",
+        content=f"Table: {table_name}, Reasoning: {reasoning}",
+        border_style="bold cyan"
+    )
+    
     try:
         schema = describe_table(table_name)
-        return {
+        result = {
             "status": "success",
             "table": table_name,
             "schema": schema,
             "columns_count": len(schema["columns"])
         }
+        return str(result)
     except Exception as e:
-        raise ToolException(f"Error en describe_db_table: {e}")
+        error_msg = f"Error describing table {table_name}: {str(e)}"
+        log_panel(title="Tool Error", content=error_msg, border_style="bold red")
+        return error_msg
 
-async def _wrap_execute_query(query: str) -> Any:
+@tool(parse_docstring=True)
+def execute_query(query: str, reasoning: str) -> str:
+    """Executes a SELECT query and returns the results in JSON format.
+    
+    Args:
+        query: The SQL SELECT query to execute (only SELECT statements allowed)
+        reasoning: Detailed explanation of what you expect to find and why this query is needed
+    """
+    log_panel(
+        title="Execute Query Tool",
+        content=f"Query: {query}\nReasoning: {reasoning}",
+        border_style="bold yellow"
+    )
+    
     try:
         rows = run_query(query)
         if not rows:
-            return {"rows": [], "message": "Consulta OK, sin filas."}
-        return {"rows": rows}
+            result = {"rows": [], "message": "Query executed successfully, no rows returned."}
+        else:
+            result = {"rows": rows, "count": len(rows)}
+        return str(result)
     except ValueError as ve:
-        # Error de validación
-        raise ToolException(str(ve))
+        # Validation error (e.g., non-SELECT query)
+        error_msg = f"Query validation error: {str(ve)}"
+        log_panel(title="Tool Error", content=error_msg, border_style="bold red")
+        raise ToolException(error_msg)
     except Exception as e:
-        raise ToolException(f"Error en execute_query: {e}")
+        error_msg = f"Error executing query: {str(e)}"
+        log_panel(title="Tool Error", content=error_msg, border_style="bold red")
+        raise ToolException(error_msg)
 
-def load_tools() -> list[StructuredTool]:
-    return [
-        StructuredTool(
-            name="list_db_tables",
-            description="Lista todas las tablas de la base de datos",
-            args_schema={},  # no necesita args
-            coroutine=_wrap_list_tables,
-        ),
-        StructuredTool(
-            name="describe_db_table",
-            description="Describe la estructura de una tabla (columnas y PK)",
-            args_schema={"table_name": str},
-            coroutine=_wrap_describe_table,
-        ),
-        StructuredTool(
-            name="execute_query",
-            description="Ejecuta una consulta SELECT y devuelve los resultados en JSON",
-            args_schema={"query": str},
-            coroutine=_wrap_execute_query,
-        ),
-    ]
+@tool(parse_docstring=True)
+def sample_table(reasoning: str, table_name: str, row_sample_size: int) -> str:
+    """Retrieves a small sample of rows to understand the data structure and content of a specific table.
+    
+    Args:
+        reasoning: Detailed explanation of why you need to see sample data from this table
+        table_name: Exact name of the table to sample (case-sensitive, no quotes needed)
+        row_sample_size: Number of rows to retrieve (recommended: 3-5 rows for readability)
+    """
+    log_panel(
+        title="Sample Table Tool",
+        content=f"Table: {table_name}\nRows: {row_sample_size}\nReasoning: {reasoning}",
+        border_style="bold magenta"
+    )
+    
+    try:
+        # Construct the sample query
+        query = f"SELECT * FROM {table_name} LIMIT {row_sample_size}"
+        rows = run_query(query)
+        
+        if not rows:
+            result = {"rows": [], "message": f"Table {table_name} exists but contains no data."}
+        else:
+            result = {"rows": rows, "count": len(rows), "table": table_name}
+        
+        return str(result)
+    except ValueError as ve:
+        # Validation error from run_query
+        error_msg = f"Query validation error: {str(ve)}"
+        log_panel(title="Tool Error", content=error_msg, border_style="bold red")
+        raise ToolException(error_msg)
+    except Exception as e:
+        error_msg = f"Error sampling table {table_name}: {str(e)}"
+        log_panel(title="Tool Error", content=error_msg, border_style="bold red")
+        raise ToolException(error_msg)
+
+def get_available_tools() -> List[BaseTool]:
+    """Returns a list of all available database tools."""
+    return [list_db_tables, describe_db_table, execute_query, sample_table]
+
+def load_tools() -> List[BaseTool]:
+    """Loads and returns all available tools for the agent."""
+    return get_available_tools()

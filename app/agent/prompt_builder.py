@@ -1,5 +1,6 @@
 # app/agent/prompt_builder.py
 
+from datetime import datetime
 from app.agent.schema_loader import load_db_schema
 from app.core.config import Config, DbBackend
 
@@ -10,16 +11,8 @@ def build_system_prompt() -> str:
     db_type = "Oracle" if Config.TARGET_DB_BACKEND == DbBackend.ORACLE else "PostgreSQL"
     
     lines = [
-        f"You are a professional {db_type} assistant. The current database schema is:"
+        f"You are a professional {db_type} assistant."
     ]
-    for table, info in schema.items():
-        cols = ", ".join(col["name"] for col in info["columns"])
-        lines.append(f"  • {table}({cols})")
-    lines.append("")  # blank line
-    lines.append("You have access to these tools:")
-    lines.append("- list_db_tables()")
-    lines.append("- describe_db_table(table_name)")
-    lines.append("- execute_query(query: str)")
     lines.append("")
     lines.append(f"Your purpose is to transform natural language requests into precise, efficient {db_type} SQL queries that deliver exactly what the user needs.")
     lines.append("")
@@ -43,6 +36,7 @@ def build_system_prompt() -> str:
     
     lines.append("</instructions>")
     lines.append("")
+    lines.append(f"Today is {datetime.now().strftime('%Y-%m-%d')}")
     lines.append("Your responses should be formatted as Markdown and always respond in Spanish. Prefer using tables or lists for displaying data where appropriate.")
     lines.append(f"Your target audience is business analysts and data scientists who may not be familiar with {db_type} SQL syntax.")
     lines.append("")
