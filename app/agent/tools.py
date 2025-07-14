@@ -67,11 +67,13 @@ def execute_query(query: str, reasoning: str) -> str:
         query: The SQL SELECT query to execute (only SELECT statements allowed)
         reasoning: Detailed explanation of what you expect to find and why this query is needed
     """
+    sanitized = query.strip().rstrip(';').strip()
     log_panel(
-        title="Execute Query Tool",
-        content=f"Query: {query}\nReasoning: {reasoning}",
+        title="Execute Query Tool (sanitized)",
+        content=f"Original: {query!r}\nSanitized: {sanitized!r}\nReasoning: {reasoning}",
         border_style="bold yellow"
     )
+    query = sanitized
     
     try:
         rows = run_query(query)
