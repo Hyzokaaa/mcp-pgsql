@@ -45,6 +45,32 @@ def run_query(sql: str) -> list[dict]:
         filas_map = result.mappings().all()
         return [dict(row) for row in filas_map]
 
+def sample_table(table_name: str, row_sample_size: int = 10) -> list[dict]:
+    """
+    Obtiene una muestra de filas de una tabla, compatible con el backend de la base de datos.
+    
+    Args:
+        table_name: Nombre de la tabla.
+        row_sample_size: Número de filas a retornar (default: 10).
+    
+    Returns:
+        Lista de diccionarios con las filas muestreadas.
+    """
+    if Config.TARGET_DB_BACKEND == DbBackend.ORACLE:
+        # Consulta compatible con todas las versiones de Oracle (ROWNUM)
+        query = f"""
+        SELECT * FROM (
+            SELECT * FROM {table_name} ORDER BY 1
+        ) WHERE ROWNUM <= {row_sample_size}
+        """
+    elif Config.TARGET_DB_BACKEND == DbBackend.POSTGRES:
+        # PostgreSQL usa LIMIT directamente
+        query = f"SELECT * FROM {table_name} LIMIT {row_sample_size}"
+    else:
+        raise ValueError(f"Backend no soportado: {Config.TARGET_DB_BACKEND}")
+    
+    return run_query(query)
+
 def get_target_engine():
     """Retorna engine de la base de datos TARGET"""
     return target_engine

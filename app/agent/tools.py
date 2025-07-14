@@ -2,7 +2,7 @@
 
 from typing import Any, List
 from langchain_core.tools import tool, ToolException, BaseTool
-from app.db.db import list_tables, describe_table, run_query
+from app.db.db import list_tables, describe_table, run_query, sample_table as db_sample_table
 from app.agent.logging_local import log_panel
 
 @tool(parse_docstring=True)
@@ -106,9 +106,7 @@ def sample_table(reasoning: str, table_name: str, row_sample_size: int) -> str:
     )
     
     try:
-        # Construct the sample query
-        query = f"SELECT * FROM {table_name} LIMIT {row_sample_size}"
-        rows = run_query(query)
+        rows = db_sample_table(table_name, row_sample_size)
         
         if not rows:
             result = {"rows": [], "message": f"Table {table_name} exists but contains no data."}
